@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/UTUpdater.iml" filepath="$PROJECT_DIR$/UTUpdater.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/githubrepo.iml" filepath="$PROJECT_DIR$/githubrepo.iml" />
       <module fileurl="file://$PROJECT_DIR$/utupdater_lib/utupdater_lib.iml" filepath="$PROJECT_DIR$/utupdater_lib/utupdater_lib.iml" />
     </modules>
   </component>
