@@ -36,33 +36,37 @@ public class DownloadManager implements IDownloadManager {
             Bundle data = msg.getData();
             String tag = data.getString("tag");
 
-            UTUpdateCallback callback = DownloadObserver.getIns().get(tag);
-            if (callback == null) {
-                return;
-            }
+            UTUpdateCallback callback = DownloadObserver.getIns().getCallback();
+
             switch (what) {
                 case DownloadConfig.FLAG_REQUEST_ADD_TASK: // tag标示的下载请求到下载队列成功
 
                     break;
                 case DownloadConfig.FLAG_REQUEST_START:    // tag标示的下载请求开始被执行
-                    callback.onStart();
+                    if (callback != null) {
+                        callback.onStart(tag);
+                    }
                     break;
                 case DownloadConfig.FLAG_REQUEST_PROGRESS: // tag标示的下载进度
                     long current = data.getLong("current", 0);
                     long length = data.getLong("length", 0);
 
-                    callback.onProgress(current, length);
+                    if (callback != null) {
+                        callback.onProgress(tag, current, length);
+                    }
                     break;
                 case DownloadConfig.FLAG_REQUEST_FINSIH:
                     String filePath = data.getString("path");
 
                     // 回调下载完成
-                    callback.onFinish(filePath);
+                    if (callback != null) {
+                        callback.onFinish(tag, filePath);
+                    }
 
-                    // 下载完成后移除监听
-                    DownloadObserver
-                            .getIns()
-                            .remove(tag);
+//                    // 下载完成后移除监听
+//                    DownloadObserver
+//                            .getIns()
+//                            .remove(tag);
 
                     // 保存下载状态
                     DownloadDaoImpl
@@ -73,7 +77,9 @@ public class DownloadManager implements IDownloadManager {
                     int code = data.getInt("code");
                     String errorMsg = data.getString("msg");
 
-                    callback.onError(code, errorMsg);
+                    if (callback != null) {
+                        callback.onError(tag, code, errorMsg);
+                    }
                     break;
                 case DownloadConfig.FLAG_REQUEST_PAUSE:     // 当前请求被暂停成功后, 保存当前下载进度, 以便断点续传
                     long current1 = data.getLong("current", 0);

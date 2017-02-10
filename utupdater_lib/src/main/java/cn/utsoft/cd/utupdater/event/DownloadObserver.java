@@ -13,6 +13,7 @@ public class DownloadObserver {
     private Object LOCK = new Object();
 
     private Map<String, UTUpdateCallback> callbackMap;
+    private UTUpdateCallback callback;
 
     private DownloadObserver() {
         this.callbackMap = new HashMap<>();
@@ -29,42 +30,50 @@ public class DownloadObserver {
         return instance;
     }
 
-    private boolean check() {
-        return callbackMap != null;
+//    private boolean check() {
+//        return callbackMap != null;
+//    }
+//
+//    public DownloadObserver add(String tag, UTUpdateCallback callback) {
+//        synchronized (LOCK) {
+//            if (check()) {
+//                callbackMap.put(tag, callback);
+//            }
+//        }
+//        return this;
+//    }
+//
+//    public DownloadObserver remove(String tag) {
+//        synchronized (LOCK) {
+//            if (check()) {
+//                callbackMap.remove(tag);
+//            }
+//        }
+//        return this;
+//    }
+//
+//    public UTUpdateCallback get(String tag) {
+//        synchronized (LOCK) {
+//            if (check()) {
+//                return callbackMap.get(tag);
+//            }
+//        }
+//        return null;
+//    }
+//
+//    public void clear() {
+//        synchronized (LOCK) {
+//            if (check()) {
+//                callbackMap.clear();
+//            }
+//        }
+//    }
+
+    public UTUpdateCallback getCallback() {
+        return callback;
     }
 
-    public DownloadObserver add(String tag, UTUpdateCallback callback) {
-        synchronized (LOCK) {
-            if (check()) {
-                callbackMap.put(tag, callback);
-            }
-        }
-        return this;
-    }
-
-    public DownloadObserver remove(String tag) {
-        synchronized (LOCK) {
-            if (check()) {
-                callbackMap.remove(tag);
-            }
-        }
-        return this;
-    }
-
-    public UTUpdateCallback get(String tag) {
-        synchronized (LOCK) {
-            if (check()) {
-                return callbackMap.get(tag);
-            }
-        }
-        return null;
-    }
-
-    public void clear() {
-        synchronized (LOCK) {
-            if (check()) {
-                callbackMap.clear();
-            }
-        }
+    public void setCallback(UTUpdateCallback callback) {
+        this.callback = callback;
     }
 }

@@ -7,13 +7,11 @@ package cn.utsoft.cd.utupdater.event;
  */
 public interface UTUpdateCallback {
 
-    void onStart();
+    void onStart(String tag);
 
-    void onProgress(long current, long total);
+    void onProgress(String tag, long current, long total);
 
-    void onFinish(String path);
+    void onFinish(String tag, String path);
 
-    void onPause();
-
-    void onError(int code, String msg);
+    void onError(String tag, int code, String msg);
 }
