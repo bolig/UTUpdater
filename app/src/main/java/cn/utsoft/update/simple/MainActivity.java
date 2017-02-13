@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         initDate();
         initViews();
@@ -47,22 +48,14 @@ public class MainActivity extends AppCompatActivity {
     private void initDate() {
         mDownloadList = new ArrayList<>();
 
-        for (int i = 0; i < TestDate.URL_LIST.length; i++) {
-            String url = TestDate.URL_LIST[i];
-            UpdaterEntity entity = new UpdaterEntity(url, url);
+        for (int i = 0; i < 6; i++) {
+            String url = TestDate.APK_URL;
+            UpdaterEntity entity = new UpdaterEntity("updater_" + i, url);
             entity.version = i;
             entity.versionName = "version_" + i;
             entity.name = "name_" + i;
-
+            entity.isAPK = true;
             mDownloadList.add(entity);
         }
-
-        String url = TestDate.APK_URL;
-        UpdaterEntity entity = new UpdaterEntity(url, url);
-        entity.version = 1111;
-        entity.versionName = "version_" + 1111;
-        entity.name = "name_" + 1111;
-        entity.isAPK = true;
-        mDownloadList.add(entity);
     }
 }

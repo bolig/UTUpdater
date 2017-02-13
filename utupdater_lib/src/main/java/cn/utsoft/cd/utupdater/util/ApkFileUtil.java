@@ -11,6 +11,13 @@ import java.io.File;
  */
 public class ApkFileUtil {
 
+    /**
+     * 创建apk缓存地址
+     *
+     * @param context
+     * @param versionName
+     * @return
+     */
     public static File create(Context context, String versionName) {
         File cacheDir = getCacheDir(context);
         cacheDir.mkdirs();
@@ -22,6 +29,12 @@ public class ApkFileUtil {
         return file;
     }
 
+    /**
+     * 获取系统缓存路径
+     *
+     * @param context
+     * @return
+     */
     private static File getCacheDir(Context context) {
         File cacheDir = context.getExternalCacheDir();
         if (cacheDir == null) {

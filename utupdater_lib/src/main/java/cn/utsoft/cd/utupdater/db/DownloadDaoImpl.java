@@ -36,6 +36,11 @@ public class DownloadDaoImpl {
         this.dbHelper = DBHelper.getInstance(context);
     }
 
+    /**
+     * 添加下载记录
+     *
+     * @param info
+     */
     public void insertDownloadInfo(RequestBean info) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         ContentValues values = new ContentValues();
@@ -57,6 +62,11 @@ public class DownloadDaoImpl {
         db.close();
     }
 
+    /**
+     * 删除tag = ? 的记录
+     *
+     * @param tag
+     */
     public void deleteDownloadInfo(String tag) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         db.delete(DownloadConfig.DOWNLOAD_TABLE, "tag = ?", new String[]{tag});
@@ -64,6 +74,11 @@ public class DownloadDaoImpl {
         db.close();
     }
 
+    /**
+     * 删除所有记录
+     *
+     * @return
+     */
     public int deleteAll() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         int delete = db.delete(DownloadConfig.DOWNLOAD_TABLE, "_id >= 0", null);
@@ -72,6 +87,13 @@ public class DownloadDaoImpl {
         return delete;
     }
 
+    /**
+     * 更新下载进度
+     *
+     * @param tag
+     * @param progress
+     * @param length
+     */
     public void updateDownloadInfo(String tag, long progress, long length) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -80,6 +102,12 @@ public class DownloadDaoImpl {
         db.close();
     }
 
+    /**
+     * 更新记录为下载完成
+     *
+     * @param tag
+     * @param finished
+     */
     public void updateDownloadFinishInfo(String tag, long finished) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -88,6 +116,12 @@ public class DownloadDaoImpl {
         db.close();
     }
 
+    /**
+     * 通过tag查询多条记录
+     *
+     * @param tag
+     * @return
+     */
     public List<RequestBean> queryDownloadInfos(String tag) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -100,22 +134,34 @@ public class DownloadDaoImpl {
                 null, null, null);
 
         while (cursor.moveToNext()) {
-            RequestBean bean = new RequestBean();
-            bean.tag = cursor.getString(cursor.getColumnIndex("tag"));
-            bean.url = cursor.getString(cursor.getColumnIndex("url"));
-            bean.name = cursor.getString(cursor.getColumnIndex("name"));
-            bean.versionName = cursor.getString(cursor.getColumnIndex("versionName"));
-            bean.version = cursor.getInt(cursor.getColumnIndex("version"));
-            bean.path = cursor.getString(cursor.getColumnIndex("path"));
-            bean.length = cursor.getLong(cursor.getColumnIndex("length"));
-            bean.progress = cursor.getLong(cursor.getColumnIndex("progress"));
-            bean.finished = cursor.getInt(cursor.getColumnIndex("finished"));
+            RequestBean bean = getRequestBean(cursor);
             list.add(bean);
         }
 
         cursor.close();
         db.close();
         return list;
+    }
+
+    /**
+     * 封装下载记录
+     *
+     * @param cursor
+     * @return
+     */
+    private RequestBean getRequestBean(Cursor cursor) {
+        RequestBean bean = new RequestBean();
+        bean.id = cursor.getInt(cursor.getColumnIndex("_id"));
+        bean.tag = cursor.getString(cursor.getColumnIndex("tag"));
+        bean.url = cursor.getString(cursor.getColumnIndex("url"));
+        bean.name = cursor.getString(cursor.getColumnIndex("name"));
+        bean.versionName = cursor.getString(cursor.getColumnIndex("versionName"));
+        bean.version = cursor.getInt(cursor.getColumnIndex("version"));
+        bean.path = cursor.getString(cursor.getColumnIndex("path"));
+        bean.length = cursor.getLong(cursor.getColumnIndex("length"));
+        bean.progress = cursor.getLong(cursor.getColumnIndex("progress"));
+        bean.finished = cursor.getInt(cursor.getColumnIndex("finished"));
+        return bean;
     }
 
     /**
@@ -134,16 +180,7 @@ public class DownloadDaoImpl {
                 null, null, null, null);
 
         while (cursor.moveToNext()) {
-            RequestBean bean = new RequestBean();
-            bean.tag = cursor.getString(cursor.getColumnIndex("tag"));
-            bean.url = cursor.getString(cursor.getColumnIndex("url"));
-            bean.name = cursor.getString(cursor.getColumnIndex("name"));
-            bean.versionName = cursor.getString(cursor.getColumnIndex("versionName"));
-            bean.version = cursor.getInt(cursor.getColumnIndex("version"));
-            bean.path = cursor.getString(cursor.getColumnIndex("path"));
-            bean.length = cursor.getLong(cursor.getColumnIndex("length"));
-            bean.progress = cursor.getLong(cursor.getColumnIndex("progress"));
-            bean.finished = cursor.getInt(cursor.getColumnIndex("finished"));
+            RequestBean bean = getRequestBean(cursor);
             list.add(bean);
         }
 
@@ -152,6 +189,12 @@ public class DownloadDaoImpl {
         return list;
     }
 
+    /**
+     * 查询单个记录
+     *
+     * @param tag
+     * @return
+     */
     public RequestBean queryDownloadInfo(String tag) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -164,17 +207,9 @@ public class DownloadDaoImpl {
                 null, null, null);
 
         if (cursor.moveToNext()) {
-            bean = new RequestBean();
-            bean.tag = cursor.getString(cursor.getColumnIndex("tag"));
-            bean.url = cursor.getString(cursor.getColumnIndex("url"));
-            bean.name = cursor.getString(cursor.getColumnIndex("name"));
-            bean.versionName = cursor.getString(cursor.getColumnIndex("versionName"));
-            bean.version = cursor.getInt(cursor.getColumnIndex("version"));
-            bean.path = cursor.getString(cursor.getColumnIndex("path"));
-            bean.length = cursor.getLong(cursor.getColumnIndex("length"));
-            bean.progress = cursor.getLong(cursor.getColumnIndex("progress"));
-            bean.finished = cursor.getInt(cursor.getColumnIndex("finished"));
+            bean = getRequestBean(cursor);
         }
+
         cursor.close();
         db.close();
         return bean;
