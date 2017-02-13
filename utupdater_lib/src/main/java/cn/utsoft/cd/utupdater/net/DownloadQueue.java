@@ -55,18 +55,28 @@ public class DownloadQueue extends BaseQueue implements IQueue {
     }
 
     @Override
+    public void removeAllDownloadRequest() {
+
+    }
+
+    @Override
     public void pauseDownloadRequest(String tag) {
         pauseRequest(tag);
     }
 
     @Override
-    public void pauseDownload(String tag) {
+    public void pauseAllDownloadRequest() {
 
     }
 
     @Override
     public void resumeDownloadRequest(String tag) {
         resumeRequest(tag);
+    }
+
+    @Override
+    public void resumeAllDownloadRequest(String tag) {
+
     }
 
     @Override

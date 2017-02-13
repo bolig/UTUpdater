@@ -33,23 +33,30 @@ public interface IQueue {
     void removeDownloadRequest(String tag);
 
     /**
+     * 移除所有下载信息
+     */
+    void removeAllDownloadRequest();
+
+    /**
      * 暂停一个下载请求
      *
      * @param tag
      */
     void pauseDownloadRequest(String tag);
 
+    void pauseAllDownloadRequest();
+
     /**
-     * 把下载请求移至暂停队列
+     * 重启下载信息
      *
      * @param tag
      */
-    void pauseDownload(String tag);
+    void resumeDownloadRequest(String tag);
 
     /**
      * @param tag
      */
-    void resumeDownloadRequest(String tag);
+    void resumeAllDownloadRequest(String tag);
 
     /**
      * 清理队列

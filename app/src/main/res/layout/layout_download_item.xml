@@ -11,6 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -18,6 +19,8 @@
             android:id="@+id/iv_view"
             android:layout_width="64dp"
             android:layout_height="64dp"
+            android:layout_marginLeft="8dp"
+            android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher"/>
 
         <ProgressBar
@@ -30,18 +33,35 @@
             android:max="100"
             android:progress="0"/>
 
-        <ImageView
-            android:id="@+id/iv_download"
+        <FrameLayout
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginRight="8dp"
-            android:src="@drawable/ic_down_optins"/>
+            android:layout_marginRight="8dp">
+
+            <ImageView
+                android:id="@+id/iv_download"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_down_optins"/>
+
+            <TextView
+                android:id="@+id/tv_show"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="详情"
+                android:textColor="@color/colorPrimary"
+                android:textSize="16dp"
+                android:visibility="gone"/>
+
+        </FrameLayout>
 
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#cceef1"></View>
+        android:layout_marginTop="8dp"
+        android:background="#e1e1e1"></View>
 
 </LinearLayout>

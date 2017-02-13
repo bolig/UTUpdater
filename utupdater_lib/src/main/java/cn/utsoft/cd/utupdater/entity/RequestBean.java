@@ -26,6 +26,7 @@ public class RequestBean implements Serializable {
     public long progress;
 
     public RequestBean() {
+
     }
 
     public RequestBean(String tag, String url, String name, String versionName, int version) {
@@ -34,6 +35,33 @@ public class RequestBean implements Serializable {
         this.url = url;
         this.version = version;
         this.versionName = versionName;
+    }
+
+    /**
+     * 判断当前请求是否完成下载
+     *
+     * @return
+     */
+    public boolean finish() {
+        return finished == 1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RequestBean bean = (RequestBean) o;
+
+        if (version != bean.version) return false;
+        return url != null ? url.equals(bean.url) : bean.url == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = version;
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        return result;
     }
 
     public boolean isNull() {

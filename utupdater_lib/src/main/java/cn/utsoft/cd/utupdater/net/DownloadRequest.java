@@ -76,7 +76,7 @@ public class DownloadRequest extends Request {
 
             in = connect();
 
-            if (in == null){
+            if (in == null) {
                 getHandler().sendError(getTag(),
                         ErrorCode.ERROR_CONNECT_CODE,
                         "网络链接失败");
@@ -134,7 +134,9 @@ public class DownloadRequest extends Request {
             // 读取数据
             in = mConnection.getInputStream();
 
-            total = mConnection.getContentLength();
+            if (total <= 0) {
+                total = mConnection.getContentLength();
+            }
 
             byte[] b = new byte[1024 * 4];
 
@@ -150,12 +152,15 @@ public class DownloadRequest extends Request {
                         current,
                         total);
 
+                Log.e("DownloadRequest", "len/total = " + current + " || " + total);
+
                 if (!checkNectEnable()) {
                     if (current < total && total > 100) {
                         getHandler().sendPause(getTag(), // 当连接中断时保持当前下载信息
                                 current,
                                 total);
                     }
+                    Log.e("DownloadRequest - check", "len/total = " + current + " || " + total);
                     return in;
                 }
             }
@@ -169,4 +174,16 @@ public class DownloadRequest extends Request {
         }
         return in;
     }
+
+//    @Override
+//    public void reset() {
+//        super.reset();
+//        DownloadDaoImpl dao = DownloadDaoImpl.getIns(getContext());
+//
+//        RequestBean bean = dao.queryDownloadInfo(getTag());
+//
+//        current = bean.progress;
+//
+//        Log.e("DownloadRequest - reset", "len/total = " + current + " || " + total);
+//    }
 }

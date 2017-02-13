@@ -64,6 +64,14 @@ public class DownloadDaoImpl {
         db.close();
     }
 
+    public int deleteAll() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        int delete = db.delete(DownloadConfig.DOWNLOAD_TABLE, "_id >= 0", null);
+
+        db.close();
+        return delete;
+    }
+
     public void updateDownloadInfo(String tag, long progress, long length) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -90,6 +98,40 @@ public class DownloadDaoImpl {
                 "tag = ?",
                 new String[]{tag},
                 null, null, null);
+
+        while (cursor.moveToNext()) {
+            RequestBean bean = new RequestBean();
+            bean.tag = cursor.getString(cursor.getColumnIndex("tag"));
+            bean.url = cursor.getString(cursor.getColumnIndex("url"));
+            bean.name = cursor.getString(cursor.getColumnIndex("name"));
+            bean.versionName = cursor.getString(cursor.getColumnIndex("versionName"));
+            bean.version = cursor.getInt(cursor.getColumnIndex("version"));
+            bean.path = cursor.getString(cursor.getColumnIndex("path"));
+            bean.length = cursor.getLong(cursor.getColumnIndex("length"));
+            bean.progress = cursor.getLong(cursor.getColumnIndex("progress"));
+            bean.finished = cursor.getInt(cursor.getColumnIndex("finished"));
+            list.add(bean);
+        }
+
+        cursor.close();
+        db.close();
+        return list;
+    }
+
+    /**
+     * 查询所有记录
+     *
+     * @return
+     */
+    public List<RequestBean> queryAll() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        List<RequestBean> list = new ArrayList<>();
+
+        Cursor cursor = db.query(DownloadConfig.DOWNLOAD_TABLE,
+                null,
+                "_id >= 0",
+                null, null, null, null);
 
         while (cursor.moveToNext()) {
             RequestBean bean = new RequestBean();
