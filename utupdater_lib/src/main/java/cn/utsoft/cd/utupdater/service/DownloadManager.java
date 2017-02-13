@@ -3,6 +3,7 @@ package cn.utsoft.cd.utupdater.service;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.util.List;
@@ -48,8 +49,8 @@ public class DownloadManager implements IDownloadManager {
                     }
                     break;
                 case DownloadConfig.FLAG_REQUEST_PROGRESS: // tag标示的下载进度
-                    long current = data.getLong("current", 0);
-                    long length = data.getLong("length", 0);
+                    long current = data.getLong("current", -1);
+                    long length = data.getLong("length", -1);
 
                     if (callback != null) {
                         callback.onProgress(tag, current, length);
@@ -62,11 +63,6 @@ public class DownloadManager implements IDownloadManager {
                     if (callback != null) {
                         callback.onFinish(tag, filePath);
                     }
-
-//                    // 下载完成后移除监听
-//                    DownloadObserver
-//                            .getIns()
-//                            .remove(tag);
 
                     // 保存下载状态
                     DownloadDaoImpl
@@ -122,24 +118,59 @@ public class DownloadManager implements IDownloadManager {
 
         DownloadDaoImpl dao = DownloadDaoImpl.getIns(mContext);
 
-        RequestBean contains = dao.queryDownloadInfo(request.tag);
+        RequestBean history = dao.queryDownloadInfo(request.tag);
 
-        if (contains != null) {
-            request = contains;
-        } else {
-            File file = ApkFileUtil.create(mContext, request.name);
-
-            request.path = file.getAbsolutePath();
-
-            dao.insertDownloadInfo(request);
+        int status = checkDownloadStatus(request, history);
+        switch (status) {
+            case 0:
+                File file = ApkFileUtil.create(mContext, request.name);
+                request.path = file.getAbsolutePath();
+                dao.insertDownloadInfo(request);
+                break;
+            case 1:
+                request = history;
+                break;
+            case 2:
+                mMsgHandler.sendFinish(tag, history.path);
+                return;
         }
-
 
         getDownloadQueue().addDownloadRequest(request); // 加入下载队列
     }
 
+    /**
+     * 检查下载信息(0：需创建新的下载记录; 1: 已有记录, 但未完成; 3: 完成下载, 并且文件存在)
+     *
+     * @param current
+     * @param history
+     * @return
+     */
+    private int checkDownloadStatus(RequestBean current, RequestBean history) {
+        if (current.equals(history)) {
+            String path = history.path;
+            if (TextUtils.isEmpty(path)) {
+                return 0;
+            } else {
+                File file = new File(path);
+                if (!file.exists()) {
+                    return 0;
+                }
+            }
+            if (history.finish()) {
+                return 2;
+            } else {
+                return 1;
+            }
+        } else {
+            return 0;
+        }
+    }
+
     @Override
     public void removeDownload(String tag) {
+        DownloadDaoImpl dao = DownloadDaoImpl.getIns(mContext);
+        dao.deleteDownloadInfo(tag);
+
         getDownloadQueue()
                 .removeDownloadRequest(tag);
     }
@@ -164,7 +195,25 @@ public class DownloadManager implements IDownloadManager {
 
     @Override
     public void clearDownload() {
+        getDownloadQueue()
+                .removeAllDownloadRequest();
+    }
 
+    @Override
+    public void clearDownloadHistory() {
+        DownloadDaoImpl dao = DownloadDaoImpl.getIns(mContext);
+
+        List<RequestBean> list = dao.queryAll();
+        for (int i = 0; i < list.size(); i++) {
+            RequestBean bean = list.get(i);
+            String path = bean.path;
+            File file = new File(path);
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+
+        dao.deleteAll();
     }
 
     public DownloadQueue getDownloadQueue() {

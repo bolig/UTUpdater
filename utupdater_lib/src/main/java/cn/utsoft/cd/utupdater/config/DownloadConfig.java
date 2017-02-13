@@ -14,6 +14,11 @@ public class DownloadConfig {
     public static final int FLAG_REQUEST_PAUSE = 0x005;
 
     public static final String ACTION_NEW_DOWNLOAD_TASK = "NEW_DOWNLOAD_TASK"; // 创建新的下载列表
+    public static final String ACTION_ADD_DOWNLOAD = "cn.utsoft.ACTION_ADD_DOWNLOAD";
+    public static final String ACTION_PAUSE_DOWNLOAD = "cn.utsoft.ACTION_PAUSE_DOWNLOAD";
+    public static final String ACTION_RESUME_DOWNLOAD = "cn.utsoft.ACTION_RESUME_DOWNLOAD";
+    public static final String ACTION_REMOVE_DOWNLOAD = "cn.utsoft.ACTION_REMOVE_DOWNLOAD";
+    public static final String ACTION_CLEAR_DOWNLOAD_HISTORY = "cn.utsoft.ACTION_CLEAR_DOWNLOAD_HISTORY";
 
     public static final String DATA_TAG = "DATA_TAG";                   // 唯一标示
     public static final String DATA_URL = "DATA_URL";                   // 下载路径

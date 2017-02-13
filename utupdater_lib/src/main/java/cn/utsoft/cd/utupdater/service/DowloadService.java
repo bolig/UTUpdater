@@ -35,22 +35,49 @@ public class DowloadService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             String action = intent.getAction();
-            if (DownloadConfig.ACTION_NEW_DOWNLOAD_TASK.equals(action)) {
-                // TODO: 创建新的下载列表
-            } else {
-                if (intent.hasExtra(DownloadConfig.DATA_URL)) {
-                    int version = intent.getIntExtra(DownloadConfig.DATA_VERSION, 0);
+            String tag = null;
+            switch (action) {
+                case DownloadConfig.ACTION_ADD_DOWNLOAD:
+                    if (checkManager()) {
+                        if (intent.hasExtra(DownloadConfig.DATA_URL)) {
+                            tag = intent.getStringExtra(DownloadConfig.DATA_TAG);
 
-                    String url = intent.getStringExtra(DownloadConfig.DATA_URL);
-                    String tag = intent.getStringExtra(DownloadConfig.DATA_TAG);
-                    String desc = intent.getStringExtra(DownloadConfig.DATA_NAME);
-                    String versionName = intent.getStringExtra(DownloadConfig.DATA_VERSIONNAME);
+                            int version = intent.getIntExtra(DownloadConfig.DATA_VERSION, 0);
 
-                    mManager.addDownload(tag, url, desc, versionName, version);
-                }
+                            String url = intent.getStringExtra(DownloadConfig.DATA_URL);
+                            String desc = intent.getStringExtra(DownloadConfig.DATA_NAME);
+                            String versionName = intent.getStringExtra(DownloadConfig.DATA_VERSIONNAME);
+
+                            mManager.addDownload(tag, url, desc, versionName, version);
+                        }
+                    }
+                    break;
+                case DownloadConfig.ACTION_PAUSE_DOWNLOAD:
+                    if (checkManager()) {
+                        tag = intent.getStringExtra(DownloadConfig.DATA_TAG);
+
+                        mManager.pauseDownload(tag);
+                    }
+                    break;
+                case DownloadConfig.ACTION_RESUME_DOWNLOAD:
+                    if (checkManager()) {
+                        tag = intent.getStringExtra(DownloadConfig.DATA_TAG);
+
+                        mManager.resumeDownload(tag);
+                    }
+                    break;
+                case DownloadConfig.ACTION_CLEAR_DOWNLOAD_HISTORY:
+                    if (checkManager()) {
+                        mManager.clearDownloadHistory();
+                    }
+                    break;
             }
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private boolean checkManager() {
+        return mManager != null;
     }
 
     @Override

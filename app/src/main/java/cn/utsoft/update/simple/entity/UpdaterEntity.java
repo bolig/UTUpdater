@@ -18,6 +18,10 @@ public class UpdaterEntity {
     public boolean finish = false;
     public int progress = 0;
 
+    public String path;
+
+    public boolean isAPK = false;
+
     public UpdaterEntity() {
 
     }

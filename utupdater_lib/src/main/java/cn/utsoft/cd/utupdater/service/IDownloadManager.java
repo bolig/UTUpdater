@@ -57,6 +57,11 @@ public interface IDownloadManager {
     void clearDownload();
 
     /**
+     * 清空下载记录
+     */
+    void clearDownloadHistory();
+
+    /**
      * 释放下载资源
      */
     void destroy();

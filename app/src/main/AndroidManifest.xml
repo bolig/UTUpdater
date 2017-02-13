@@ -79,9 +79,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="cn.utsoft.cd.utupdater.service.DowloadService"
+
+        <service
+            android:name="cn.utsoft.cd.utupdater.service.DowloadService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false"/>
+
+        <activity android:name=".ImageActivity">
+        </activity>
     </application>
 
 </manifest>

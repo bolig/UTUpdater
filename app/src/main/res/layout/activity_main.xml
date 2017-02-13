@@ -8,8 +8,20 @@
         android:id="@+id/rv_download_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/tv_delete"
         android:scrollbars="none">
 
     </android.support.v7.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/tv_delete"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:background="#e9e9e9"
+        android:gravity="center"
+        android:text="删除下载记录"
+        android:textColor="@color/colorAccent"
+        android:textSize="18dp"/>
 
 </RelativeLayout>
