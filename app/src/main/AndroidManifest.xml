@@ -82,6 +82,17 @@
         <service android:name="cn.utsoft.cd.utupdater.service.DowloadService"
             android:enabled="true"
             android:exported="false"></service>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="cn.utsoft.cd.utupdater.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path"/>
+        </provider>
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package cn.utsoft.update.simple;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar pro;
     private ImageView ivOptions;
     private TextView tv;
+    private Context mContext;
 
     private void assignViews() {
         tv = (TextView) findViewById(R.id.tv);
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         assignViews();
-
+        mContext = this;
     }
 
     @Override
@@ -50,7 +52,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         Toast.makeText(this, "start", Toast.LENGTH_SHORT).show();
-        load();
+        UTLoadManager.load(this, "http://www.apk.anzhi.com/Anzhi_2665180_2723304_2.apk?src=/data3/apk/201612/30/7e84d7466ab34ec95689ebd9e8048721_94105100.apk",
+                "下载APK", System.currentTimeMillis() + "", new UTUpdateCallback() {
+                    @Override
+                    public void onStart() {
+                        Log.e("MainActivity", "onStart");
+                    }
+
+                    @Override
+                    public void onProgress(long current, long total) {
+                        Log.e("MainActivity", "onProgress --- ");
+                    }
+
+                    @Override
+                    public void onFinish(String path) {
+                        Log.e("MainActivity", "onFinish" + path);
+                        UTLoadManager.installApk(mContext, path);
+                    }
+
+                    @Override
+                    public void onPause() {
+
+                    }
+
+                    @Override
+                    public void onError(int code, String msg) {
+                        Log.e("MainActivity", "onProgress $$$ ");
+                    }
+                });
+//        load();
     }
 
     private void load() {
