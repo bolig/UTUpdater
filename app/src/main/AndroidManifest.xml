@@ -96,8 +96,7 @@
                 android:resource="@xml/file_path"/>
         </provider>
 
-        <activity android:name=".ImageActivity">
-        </activity>
+        <activity android:name=".ImageActivity"></activity>
     </application>
 
 </manifest>

@@ -27,7 +27,7 @@ public class ApkFileUtil {
         if (cacheDir == null) {
             cacheDir = context.getCacheDir();
         }
-        cacheDir = new File(cacheDir, "update");
+        cacheDir = new File(cacheDir, "updater");
         return cacheDir;
     }
 }

@@ -144,6 +144,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
             public void onClick(View v) {
                 if (entity.isAPK) {
                     Toast.makeText(mContext, entity.path, Toast.LENGTH_SHORT).show();
+                    UTLoadManager.installApk(mContext, entity.path);
                 } else {
                     ImageActivity.start((Activity) mContext, entity.path);
                 }

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <files-path name="name1" path="path1" />
-</paths>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <paths>
+        <external-cache-path
+            name="download_apk_dir"
+            path="updater"/>
+    </paths>
+</resources>

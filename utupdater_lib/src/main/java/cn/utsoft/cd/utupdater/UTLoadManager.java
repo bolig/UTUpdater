@@ -13,8 +13,6 @@ import cn.utsoft.cd.utupdater.config.DownloadConfig;
 import cn.utsoft.cd.utupdater.event.DownloadObserver;
 import cn.utsoft.cd.utupdater.event.UTUpdateCallback;
 import cn.utsoft.cd.utupdater.service.DowloadService;
-import cn.utsoft.cd.utupdater.util.TagUtil;
-import cn.utsoft.cd.utupdater.service.DowloadService;
 
 /**
  * Created by 李波 on 2017/2/7.
@@ -110,7 +108,6 @@ public class UTLoadManager {
                 .setCallback(callback);
     }
 
-    public static void install() {
     /**
      * 启动安装
      *
