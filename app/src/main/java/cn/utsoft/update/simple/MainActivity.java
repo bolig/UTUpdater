@@ -65,4 +65,22 @@ public class MainActivity extends AppCompatActivity {
         entity.isAPK = true;
         mDownloadList.add(entity);
     }
+
+    /**
+     * 通知栏下载
+     *
+     * @param view
+     */
+    public void toDownloadOnNotification(View view){
+
+    }
+
+    /**
+     * 弹窗下载
+     *
+     * @param view
+     */
+    public void toDownloadOnDialog(View view){
+
+    }
 }
