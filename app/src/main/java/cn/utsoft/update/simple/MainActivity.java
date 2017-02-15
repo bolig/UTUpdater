@@ -1,6 +1,8 @@
 package cn.utsoft.update.simple;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,7 +11,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import cn.utsoft.cd.utupdater.UTLoadManager;
+import cn.utsoft.cd.utupdater.UTUpdaterManager;
 import cn.utsoft.update.simple.adapter.DownloadAdapter;
 import cn.utsoft.update.simple.entity.UpdaterEntity;
 import cn.utsoft.update.simple.test.TestDate;
@@ -40,7 +42,22 @@ public class MainActivity extends AppCompatActivity {
         tvDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UTLoadManager.clearDownloadHistory(MainActivity.this);
+                AlertDialog dialog = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialog_AppCompat_DEV)
+                        .setTitle("提示")
+                        .setMessage("是否要清空下载记录?")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                UTUpdaterManager.clearDownloadHistory(MainActivity.this);
+                            }
+                        })
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
             }
         });
     }
@@ -58,4 +75,5 @@ public class MainActivity extends AppCompatActivity {
             mDownloadList.add(entity);
         }
     }
+
 }

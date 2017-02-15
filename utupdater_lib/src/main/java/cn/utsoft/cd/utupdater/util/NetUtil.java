@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import cn.utsoft.cd.utupdater.config.DownloadConfig;
+
 /**
  * Created by 李波 on 2017/2/13.
  * Function: 网络相关辅助类
@@ -26,14 +28,12 @@ public class NetUtil {
      * @return
      */
     public static boolean isConnected(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context.
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (null != connectivity) {
-            NetworkInfo info = connectivity.getActiveNetworkInfo();
+        ConnectivityManager cm = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (null != cm) {
+            NetworkInfo info = cm.getActiveNetworkInfo();
             if (null != info && info.isConnected()) {
-                if (info.getState() == NetworkInfo.State.CONNECTED) {
-                    return true;
-                }
+                return info.getState() == NetworkInfo.State.CONNECTED;
             }
         }
         return false;
@@ -62,5 +62,34 @@ public class NetUtil {
         intent.setComponent(cm);
         intent.setAction("android.intent.action.VIEW");
         activity.startActivityForResult(intent, 0);
+    }
+
+    /**
+     * 判断当前是否设置仅wifi状态下下载
+     *
+     * @param context
+     * @return
+     */
+    public static boolean netConnection(Context context) {
+        boolean isWifiDownload = SPUtil.getIns(context)
+                .getBoolean(DownloadConfig.SPU_SETTING_ONLY_WIFI_DOWNLOAD, true);
+
+        ConnectivityManager cm = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm == null) {
+            return false;
+        }
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null) {
+            return false;
+        }
+        if (isWifiDownload) {
+            return info.getType()
+                    == ConnectivityManager.TYPE_WIFI;
+        } else {
+            return info.getState()
+                    == NetworkInfo.State.CONNECTED;
+        }
     }
 }

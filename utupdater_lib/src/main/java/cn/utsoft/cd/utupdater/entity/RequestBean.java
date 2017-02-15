@@ -26,7 +26,6 @@ public class RequestBean implements Serializable {
     public long progress;
 
     public RequestBean() {
-
     }
 
     public RequestBean(String tag, String url, String name, String versionName, int version) {
@@ -35,6 +34,14 @@ public class RequestBean implements Serializable {
         this.url = url;
         this.version = version;
         this.versionName = versionName;
+    }
+
+    public long getProgress() {
+        return progress == 0 ? -1 : progress;
+    }
+
+    public long getLength() {
+        return length == 0 ? -1 : length;
     }
 
     /**

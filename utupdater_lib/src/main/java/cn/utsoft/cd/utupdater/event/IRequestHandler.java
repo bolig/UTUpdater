@@ -1,18 +1,11 @@
-package cn.utsoft.cd.utupdater.service;
+package cn.utsoft.cd.utupdater.event;
 
 /**
  * Created by 李波 on 2017/2/10.
  * Function:
  * Desc:
  */
-public interface IHandler {
-
-    /**
-     * 添加下载队列成功
-     *
-     * @param tag
-     */
-    void sendAddTaskSuccess(String tag);
+public interface IRequestHandler {
 
     /**
      * 发送下载请求开始下载
@@ -28,7 +21,7 @@ public interface IHandler {
      * @param current
      * @param total
      */
-    void sendProgres(String tag, long current, long total);
+    void sendProgress(String tag, long current, long total, String velocity);
 
     /**
      * 发送下载完成

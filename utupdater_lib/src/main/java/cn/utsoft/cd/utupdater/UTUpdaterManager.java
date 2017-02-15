@@ -4,15 +4,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 
 import java.io.File;
 
 import cn.utsoft.cd.utupdater.config.DownloadConfig;
-import cn.utsoft.cd.utupdater.event.DownloadObserver;
-import cn.utsoft.cd.utupdater.event.UTUpdateCallback;
 import cn.utsoft.cd.utupdater.service.DowloadService;
+import cn.utsoft.cd.utupdater.util.SPUtil;
 
 /**
  * Created by 李波 on 2017/2/7.
@@ -22,12 +23,11 @@ import cn.utsoft.cd.utupdater.service.DowloadService;
  * 4...
  * Desc:
  */
-public class UTLoadManager {
+public class UTUpdaterManager {
 
     public static void check() {
 
     }
-
 
     /**
      * 启动下载
@@ -36,14 +36,37 @@ public class UTLoadManager {
      * @param url
      * @param
      */
-    public static void load(Context context, String tag, String url, String name, String versionName, int version) {
+    public static void load(@NonNull Context context,
+                            @NonNull String tag,
+                            @NonNull String url,
+                            @Nullable String name,
+                            @Nullable String versionName,
+                            @Nullable int version) {
         Intent intent = new Intent(context, DowloadService.class);
         intent.setAction(DownloadConfig.ACTION_ADD_DOWNLOAD);
         intent.putExtra(DownloadConfig.DATA_TAG, tag);
         intent.putExtra(DownloadConfig.DATA_URL, url);
         intent.putExtra(DownloadConfig.DATA_NAME, name);
-        intent.putExtra(DownloadConfig.DATA_VERSION, versionName);
         intent.putExtra(DownloadConfig.DATA_VERSION, version);
+        intent.putExtra(DownloadConfig.DATA_VERSION_NAME, versionName);
+        context.startService(intent);
+    }
+
+    /**
+     * 启动下载
+     *
+     * @param context
+     * @param url
+     * @param
+     */
+    public static void load(@NonNull Context context, @NonNull String tag, @NonNull String url, UTUpdaterListener listener) {
+        UTUpdaterObserver.getIns().addListener(tag, listener);
+
+        Intent intent = new Intent(context, DowloadService.class);
+        intent.setAction(DownloadConfig.ACTION_ADD_DOWNLOAD);
+        intent.putExtra(DownloadConfig.DATA_TAG, tag);
+        intent.putExtra(DownloadConfig.DATA_URL, url);
+
         context.startService(intent);
     }
 
@@ -102,8 +125,8 @@ public class UTLoadManager {
      *
      * @param callback
      */
-    public static void observer(UTUpdateCallback callback) {
-        DownloadObserver
+    public static void observer(UTUpdaterCallback callback) {
+        UTUpdaterObserver
                 .getIns()
                 .setCallback(callback);
     }
@@ -133,6 +156,29 @@ public class UTLoadManager {
             intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
         }
         context.startActivity(intent);
+    }
+
+    /**
+     * 设置是否仅在wifi状态下下载
+     *
+     * @param context
+     * @param value
+     */
+    public static void setOnlyWifiDownload(Context context, boolean value) {
+        SPUtil.getIns(context)
+                .putBoolean(DownloadConfig.SPU_SETTING_ONLY_WIFI_DOWNLOAD, value);
+    }
+
+    /**
+     * 是否仅在wifi下下载
+     *
+     * @param context
+     * @return
+     */
+    public static boolean isOnlyWifiDownload(Context context) {
+        boolean value = SPUtil.getIns(context)
+                .getBoolean(DownloadConfig.SPU_SETTING_ONLY_WIFI_DOWNLOAD, true);
+        return value;
     }
 }
 

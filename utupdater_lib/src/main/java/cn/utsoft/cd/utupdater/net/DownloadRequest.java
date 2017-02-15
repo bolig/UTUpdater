@@ -1,7 +1,6 @@
 package cn.utsoft.cd.utupdater.net;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +10,9 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import cn.utsoft.cd.utupdater.UTUpdaterListener;
 import cn.utsoft.cd.utupdater.config.ErrorCode;
 import cn.utsoft.cd.utupdater.entity.RequestBean;
-import cn.utsoft.cd.utupdater.service.DownloadHandler;
 
 /**
  * Created by 李波 on 2017/2/8.
@@ -31,8 +30,10 @@ public class DownloadRequest extends Request {
 
     private RandomAccessFile tempFile;
 
-    public DownloadRequest(Context context, RequestBean request, DownloadHandler handler) {
-        super(context, request.tag, handler);
+    public DownloadRequest(Context context,
+                           RequestBean request,
+                           UTUpdaterListener listener) {
+        super(context, request.tag, listener);
 
         if (request == null || request.isNull()) {
             throw new NullPointerException("url is Null");
@@ -70,8 +71,6 @@ public class DownloadRequest extends Request {
         InputStream in = null;
         try {
 
-            Log.e("MainActivity", "thread --- " + Thread.currentThread().getName());
-
             getHandler().sendStart(getTag());
 
             in = connect();
@@ -79,18 +78,44 @@ public class DownloadRequest extends Request {
             if (in == null) {
                 getHandler().sendError(getTag(),
                         ErrorCode.ERROR_CONNECT_CODE,
-                        "网络链接失败");
+                        "网络连接失败");
             }
         } catch (ConnectException e) {
             e.printStackTrace();
-            getHandler().sendError(getTag(),
-                    ErrorCode.ERROR_TIMEOUT_CODE,
-                    "连接超时");
+
+            /**
+             * 当网络断开时保存当前下载进度
+             */
+            if (current > 100 && total > current) {
+                getHandler().sendPause(getTag(), current, total);
+            }
+
+            // 回调移除, 移除请求
+            callback.onDownloadError(getTag());
+
+            if (checkNectEnable()) {
+                getHandler().sendError(getTag(),
+                        ErrorCode.ERROR_TIMEOUT_CODE,
+                        "连接超时");
+            }
         } catch (IOException e) {
             e.printStackTrace();
-            getHandler().sendError(getTag(),
-                    ErrorCode.ERROR_CONNECT_CODE,
-                    "初始化网络链接失败");
+
+            /**
+             * 当网络断开时保存当前下载进度
+             */
+            if (current > 100 && total > current) {
+                getHandler().sendPause(getTag(), current, total);
+            }
+
+            // 回调移除, 移除请求
+            callback.onDownloadError(getTag());
+
+            if (checkNectEnable()) {
+                getHandler().sendError(getTag(),
+                        ErrorCode.ERROR_CONNECT_CODE,
+                        "初始化网络链接失败");
+            }
         } finally {
             try {
                 tempFile.close();
@@ -142,28 +167,37 @@ public class DownloadRequest extends Request {
 
             int len = -1;
 
+            ProgressHelper helper = new ProgressHelper();
+            helper.start();
+
             while ((len = in.read(b)) != -1) {
                 // 写入文件
                 tempFile.write(b, 0, len);
 
                 current += len; // 当前进度
 
-                getHandler().sendProgres(getTag(), // 发布下载进度
-                        current,
-                        total);
+                helper.publish(current, total, false);
 
-                Log.e("DownloadRequest", "len/total = " + current + " || " + total);
+                if (!checkNectEnable() && current < total) {
 
-                if (!checkNectEnable()) {
+                    helper.publish(current, total, true);
+
                     if (current < total && total > 100) {
                         getHandler().sendPause(getTag(), // 当连接中断时保持当前下载信息
                                 current,
                                 total);
                     }
-                    Log.e("DownloadRequest - check", "len/total = " + current + " || " + total);
                     return in;
                 }
             }
+
+            // 发布进度
+            helper.publish(current, total, true);
+
+            if (callback != null) {
+                callback.onDownloadFinish(getTag());
+            }
+
             getHandler().sendFinish(getTag(),// 下载完成返回本地路径
                     requestParams.path);
         } else {
@@ -175,15 +209,73 @@ public class DownloadRequest extends Request {
         return in;
     }
 
-//    @Override
-//    public void reset() {
-//        super.reset();
-//        DownloadDaoImpl dao = DownloadDaoImpl.getIns(getContext());
-//
-//        RequestBean bean = dao.queryDownloadInfo(getTag());
-//
-//        current = bean.progress;
-//
-//        Log.e("DownloadRequest - reset", "len/total = " + current + " || " + total);
-//    }
+    /**
+     * 进度辅助类, 用于管理进度发布时间和下载速度
+     */
+    public class ProgressHelper {
+        private int delay;
+        private long startTime;
+        private long progress;
+
+        private Object LOCK = new Object();
+
+        public ProgressHelper() {
+            this(1000);
+        }
+
+        public ProgressHelper(int delay) {
+            this.delay = delay;
+        }
+
+        public void start() {
+            synchronized (LOCK) {
+                startTime = System.currentTimeMillis();
+            }
+        }
+
+        /**
+         * 发布进度
+         *
+         * @param current
+         * @param total
+         */
+        public void publish(long current, long total, boolean finish) {
+            synchronized (LOCK) {
+                long timeMillis = System.currentTimeMillis();
+                int offsetTime = (int) (timeMillis - startTime);
+                if (offsetTime >= delay || finish) {
+                    start(); // 刷新开始时间
+
+                    float offsetLoad = current - progress; // 下载增量
+
+                    String velocity = calculateVelocity(offsetLoad, offsetTime);
+
+                    getHandler().sendProgress(getTag(), current, total, velocity);
+
+                    this.progress = current;
+                }
+            }
+        }
+
+        /**
+         * 计算下载速度
+         *
+         * @param offsetLoad
+         * @param offsetTime
+         * @return
+         */
+        public String calculateVelocity(float offsetLoad, float offsetTime) {
+            // offsetLoad / offsetTime的结果单位为 b/ms * 1.024f 单位转换成kb/s
+            float v = offsetLoad / offsetTime * 1.024f;
+            if (v > 1000) {
+                // 当KB/s大于1000时, 单位转换成MB/s
+                float v1 = v / 1024f;
+                String result = String.format("%.2f", v1);
+                return result + "MB/s";
+            } else {
+                String result = String.format("%.2f", v);
+                return result + "KB/s";
+            }
+        }
+    }
 }

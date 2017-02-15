@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_alignParentBottom="true"
@@ -23,15 +24,41 @@
             android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher"/>
 
-        <ProgressBar
-            android:id="@+id/pro"
-            style="?android:attr/progressBarStyleHorizontal"
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:max="100"
-            android:progress="0"/>
+            android:layout_weight="1">
+
+            <ProgressBar
+                android:id="@+id/pro"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:max="100"
+                android:progress="0"/>
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/pro"
+                android:textColor="@color/col_status_text"
+                android:textSize="12dp"
+                tools:text="等待其他下载完成..."/>
+
+            <TextView
+                android:id="@+id/tv_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/pro"
+                android:textColor="#89000000"
+                android:textSize="12dp"
+                tools:text="21/100"/>
+
+        </RelativeLayout>
 
         <FrameLayout
             android:layout_width="48dp"

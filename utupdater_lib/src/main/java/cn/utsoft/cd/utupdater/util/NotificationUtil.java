@@ -66,9 +66,6 @@ public class NotificationUtil {
         // 发送通知
         mNotifyManager.notify(id, builder.build());
 
-//        BeepManager manager = BeepManager.getInstance(context);
-//        manager.playBeepSoundAndVibrate();
-
         return id;
     }
 

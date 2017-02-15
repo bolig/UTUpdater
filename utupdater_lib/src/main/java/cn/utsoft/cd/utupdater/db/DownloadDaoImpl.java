@@ -48,6 +48,7 @@ public class DownloadDaoImpl {
         values.put("tag", info.tag);
         values.put("url", info.url);
         values.put("name", info.name);
+
         values.put("versionName", info.versionName);
         values.put("version", info.version);
 

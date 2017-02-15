@@ -46,7 +46,7 @@ public class DowloadService extends Service {
 
                             String url = intent.getStringExtra(DownloadConfig.DATA_URL);
                             String desc = intent.getStringExtra(DownloadConfig.DATA_NAME);
-                            String versionName = intent.getStringExtra(DownloadConfig.DATA_VERSIONNAME);
+                            String versionName = intent.getStringExtra(DownloadConfig.DATA_VERSION_NAME);
 
                             mManager.addDownload(tag, url, desc, versionName, version);
                         }
