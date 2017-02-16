@@ -4,7 +4,6 @@ import android.os.Handler;
 import android.os.Message;
 
 import cn.utsoft.cd.utupdater.UTUpdaterCallback;
-import cn.utsoft.cd.utupdater.UTUpdaterObserver;
 import cn.utsoft.cd.utupdater.config.DownloadConfig;
 
 /**
@@ -17,7 +16,7 @@ public class MsgHandler extends Handler implements IMsgHandler {
     @Override
     public void handleMessage(Message msg) {
         UTUpdaterCallback callback
-                = UTUpdaterObserver.getIns().getCallback();
+                = Observer.getIns().getCallback();
         if (callback == null) {
             return;
         }
@@ -33,6 +32,9 @@ public class MsgHandler extends Handler implements IMsgHandler {
                 break;
             case DownloadConfig.FLAG_CLEAR_DOWNLOADINFO:
                 callback.onClearDownloadHistory();
+                break;
+            case DownloadConfig.FLAG_REMOVEALL_REQUEST:
+                callback.onRemoveAllDownload();
                 break;
         }
     }
@@ -53,6 +55,11 @@ public class MsgHandler extends Handler implements IMsgHandler {
     @Override
     public void sendResumeAllRequest() {
         sendEmptyMessage(DownloadConfig.FLAG_RESUMEALL_REQUEST);
+    }
+
+    @Override
+    public void sendRemoveAllRequest() {
+        sendEmptyMessage(DownloadConfig.FLAG_REMOVEALL_REQUEST);
     }
 
     @Override

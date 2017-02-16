@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import java.util.Map;
 import cn.utsoft.cd.utupdater.UTUpdaterCallback;
 import cn.utsoft.cd.utupdater.UTUpdaterListener;
 import cn.utsoft.cd.utupdater.UTUpdaterManager;
+import cn.utsoft.cd.utupdater.config.ErrorCode;
 import cn.utsoft.update.simple.ImageActivity;
 import cn.utsoft.update.simple.R;
 import cn.utsoft.update.simple.entity.UpdaterEntity;
@@ -85,6 +87,8 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
             holder.tvProgress.setText(velocity);
             entity.progress = current;
             entity.total = total;
+
+            Log.d("DownloadAdapter", tag + " -- " + current + "/" + total);
         }
 
         @Override
@@ -101,15 +105,24 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
         }
 
         @Override
+        public void onRemove(String tag) {
+
+        }
+
+        @Override
         public void onError(String tag, int code, String msg) {
             UpdaterEntity entity = getEntityByTag(tag);
             Viewload holder = getViewHolderByTag(tag);
             if (entity == null || holder == null) {
                 return;
             }
-            entity.status = -1;
+            if (code == ErrorCode.ERROR_DISCONNECT_CODE) {
+                changeStatus(entity, holder);
+            } else {
+                entity.status = -1;
 
-            changeStatus(entity, holder);
+                changeStatus(entity, holder);
+            }
         }
     };
 
@@ -163,6 +176,11 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
             @Override
             public void onResumeAllDownload() {
                 Toast.makeText(mContext, "全部重新下载", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRemoveAllDownload() {
+
             }
 
             @Override
@@ -255,52 +273,6 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
         });
     }
 
-//    new UTUpdaterListener() {
-//
-//        @Override
-//        public void onPrepare(String tag) {
-//            entity.status = 1;
-//            changeStatus(entity, holder);
-//        }
-//
-//        @Override
-//        public void onStart(String tag) {
-//            entity.status = 2;
-//            changeStatus(entity, holder);
-//        }
-//
-//        @Override
-//        public void onPause(String tag) {
-//            entity.status = 3;
-//            changeStatus(entity, holder);
-//        }
-//
-//        @Override
-//        public void onProgress(String tag, long current, long total, String velocity) {
-//            int progress = (int) (current * 100 / total);
-//            holder.pro.setProgress(progress);
-//            holder.tvProgress.setText(velocity);
-//            entity.progress = current;
-//            entity.total = total;
-//        }
-//
-//        @Override
-//        public void onComplete(String tag, String path) {
-//            if (TextUtils.isEmpty(tag)) {
-//                return;
-//            }
-//            entity.path = path;
-//            entity.status = 4;
-//
-//            changeStatus(entity, holder);
-//        }
-//
-//        @Override
-//        public void onError(String tag, int code, String msg) {
-//            Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
     private void changeStatus(UpdaterEntity entity, Viewload holder) {
         holder.tvShow.setVisibility(View.GONE);
         holder.ivDownload.setVisibility(View.VISIBLE);
@@ -309,27 +281,23 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
         if (entity.total > 0 && entity.progress > 0) {
             int progress = (int) (entity.progress * 100 / entity.total);
             holder.pro.setProgress(progress);
+        } else {
+            holder.pro.setProgress(0);
         }
 
         if (isNetDisconnect) {
             holder.tvProgress.setText("");
+            holder.tvStatus.setText("网络连接断开");
             if (entity.status == 4) {
                 holder.tvStatus.setText("下载完成");
-
                 holder.tvShow.setVisibility(View.VISIBLE);
                 holder.ivDownload.setVisibility(View.GONE);
             } else if (entity.status == 2) {
-                holder.tvStatus.setText("网络连接断开");
                 holder.ivDownload.setSelected(true);
             } else if (entity.status == 1) {
-                holder.tvStatus.setText("网络连接断开");
                 holder.ivDownload.setSelected(true);
             } else if (entity.status == 3) {
-                holder.tvStatus.setText("暂停下载");
                 holder.ivDownload.setSelected(false);
-            } else if (entity.status == -1) {
-                holder.tvStatus.setText("下载错误");
-                holder.tvProgress.setText("");
             }
         } else {
             switch (entity.status) {
@@ -350,6 +318,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
                     break;
                 case 3:
                     holder.tvStatus.setText("暂停下载");
+                    holder.tvProgress.setText("");
                     break;
                 case 4:
                     holder.tvStatus.setText("下载完成");
@@ -388,6 +357,4 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Viewlo
             tvProgress = (TextView) itemView.findViewById(R.id.tv_progress);
         }
     }
-
-
 }

@@ -81,22 +81,23 @@
         </activity>
 
         <service
-            android:name="cn.utsoft.cd.utupdater.service.DowloadService"
+            android:name="cn.utsoft.cd.utupdater.service.DownloadService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="cn.utsoft.cd.utupdater.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
-
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path"/>
         </provider>
 
-        <activity android:name=".ImageActivity"></activity>
+        <activity android:name=".ImageActivity"/>
+        <activity android:name=".DownloadListActivity">
+        </activity>
     </application>
 
 </manifest>

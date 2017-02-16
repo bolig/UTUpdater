@@ -25,6 +25,11 @@ public interface UTUpdaterCallback {
     void onResumeAllDownload();
 
     /**
+     * 移除所有请求完成回调
+     */
+    void onRemoveAllDownload();
+
+    /**
      * 清空数据完成
      */
     void onClearDownloadHistory();

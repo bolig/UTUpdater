@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.List;
 
 import cn.utsoft.cd.utupdater.UTUpdaterListener;
-import cn.utsoft.cd.utupdater.UTUpdaterObserver;
+import cn.utsoft.cd.utupdater.event.Observer;
 import cn.utsoft.cd.utupdater.db.DownloadDaoImpl;
 import cn.utsoft.cd.utupdater.entity.RequestBean;
 import cn.utsoft.cd.utupdater.event.MsgHandler;
@@ -44,7 +44,11 @@ public class DownloadQueue extends BaseQueue implements IQueue {
     public void addDownloadRequest(RequestBean bean) {
         String tag = bean.tag;
 
-        UTUpdaterListener listener = UTUpdaterObserver.getIns().getListener(tag);
+        if (check(tag)) {
+            return;
+        }
+
+        UTUpdaterListener listener = Observer.getIns().getListener(tag);
 
         // 检查请求是否有历史记录
         DownloadDaoImpl dao = DownloadDaoImpl.getIns(getContext());
@@ -53,7 +57,7 @@ public class DownloadQueue extends BaseQueue implements IQueue {
         int status = checkDownloadStatus(bean, history);
         switch (status) {
             case 0: // 没有历史记录
-                File file = FileUtils.create(getContext(), bean.name);
+                File file = FileUtils.create(getContext(), bean.fileName);
                 bean.path = file.getAbsolutePath();
                 dao.insertDownloadInfo(bean);
                 break;
@@ -77,15 +81,10 @@ public class DownloadQueue extends BaseQueue implements IQueue {
         }
 
         // 创建下载请求
-        DownloadRequest request = new DownloadRequest(getContext(), bean, listener);
+        DownloadRequest request = new DownloadRequest(getContext(), bean, getHandler());
 
         // 添加下载队列
         super.addRequest(tag, request);
-
-        // 回调准备完毕
-        if (listener != null) {
-            listener.onPrepare(tag);
-        }
     }
 
     /**
@@ -133,6 +132,9 @@ public class DownloadQueue extends BaseQueue implements IQueue {
     @Override
     public void removeAllDownloadRequest() {
         super.removeAllRequest();
+
+        // 通知已移除所有请求
+        mMsgHandler.sendRemoveAllRequest();
     }
 
     @Override

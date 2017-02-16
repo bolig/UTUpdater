@@ -109,6 +109,20 @@ public interface IRequest {
     boolean isAddDownloadTask();
 
     /**
+     * 标记当前请求为正在执行
+     *
+     * @return
+     */
+    void toDoing();
+
+    /**
+     * 判断当前请求是否正在执行
+     *
+     * @return
+     */
+    boolean isDoing();
+
+    /**
      * 重置请求状态, 用于刷新暂停和网络断开
      */
     void reset();

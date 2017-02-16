@@ -15,6 +15,13 @@ public interface IRequestHandler {
     void sendStart(String tag);
 
     /**
+     * 发送准备完成
+     *
+     * @param tag
+     */
+    void sendPrepare(String tag);
+
+    /**
      * 发送下载进度
      *
      * @param tag
@@ -44,8 +51,22 @@ public interface IRequestHandler {
      * 当请求暂停成功后回调
      *
      * @param tag
+     */
+    void sendPause(String tag);
+
+    /**
+     * 保存当前下载进度
+     *
+     * @param tag
      * @param current
      * @param total
      */
-    void sendPause(String tag, long current, long total);
+    void sendSaveProgress(String tag, long current, long total);
+
+    /**
+     * 保存当前下载已经完成
+     *
+     * @param tag
+     */
+    void sendSaveFinished(String tag);
 }

@@ -10,17 +10,16 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import cn.utsoft.cd.utupdater.UTUpdaterListener;
 import cn.utsoft.cd.utupdater.config.ErrorCode;
 import cn.utsoft.cd.utupdater.entity.RequestBean;
+import cn.utsoft.cd.utupdater.event.RequestHandler;
 
 /**
  * Created by 李波 on 2017/2/8.
- * Function:
+ * Function: 下载请求
  * Desc:
  */
 public class DownloadRequest extends Request {
-
     private final RequestBean requestParams;
 
     private HttpURLConnection mConnection;
@@ -32,10 +31,10 @@ public class DownloadRequest extends Request {
 
     public DownloadRequest(Context context,
                            RequestBean request,
-                           UTUpdaterListener listener) {
-        super(context, request.tag, listener);
+                           RequestHandler handler) {
+        super(context, request.tag, handler);
 
-        if (request == null || request.isNull()) {
+        if (request == null) {
             throw new NullPointerException("url is Null");
         }
         this.requestParams = request;
@@ -59,8 +58,8 @@ public class DownloadRequest extends Request {
         if (tempFile.length() <= 0) {
             current = 0;
         }
-
-        if (current > 100 && total > 100) {
+        // 断点续传
+        if (current > 100 && total > current) {
             mConnection.setRequestProperty("Range",
                     "bytes=" + current + "-" + total);
         }
@@ -70,11 +69,10 @@ public class DownloadRequest extends Request {
     public void request() {
         InputStream in = null;
         try {
-
+            // 发布开始下载状态
             getHandler().sendStart(getTag());
-
+            // 创建下载连接, 返回流以做资源释放
             in = connect();
-
             if (in == null) {
                 getHandler().sendError(getTag(),
                         ErrorCode.ERROR_CONNECT_CODE,
@@ -87,7 +85,8 @@ public class DownloadRequest extends Request {
              * 当网络断开时保存当前下载进度
              */
             if (current > 100 && total > current) {
-                getHandler().sendPause(getTag(), current, total);
+                getHandler().sendSaveProgress(getTag(),
+                        current, total);
             }
 
             // 回调移除, 移除请求
@@ -105,7 +104,8 @@ public class DownloadRequest extends Request {
              * 当网络断开时保存当前下载进度
              */
             if (current > 100 && total > current) {
-                getHandler().sendPause(getTag(), current, total);
+                getHandler().sendSaveProgress(getTag(),
+                        current, total);
             }
 
             // 回调移除, 移除请求
@@ -156,34 +156,36 @@ public class DownloadRequest extends Request {
         int responseCode = mConnection.getResponseCode();
 
         if (responseCode == 206 || responseCode == 200) {   //206 Partial Content
-            // 读取数据
+            // 获取数据流
             in = mConnection.getInputStream();
-
+            if (in == null) {
+                return null;
+            }
+            // 因为断点续传每次返回的ContentLength为剩余的总量, 这样会使进度计算有误
             if (total <= 0) {
                 total = mConnection.getContentLength();
             }
-
             byte[] b = new byte[1024 * 4];
-
             int len = -1;
-
             ProgressHelper helper = new ProgressHelper();
             helper.start();
 
             while ((len = in.read(b)) != -1) {
                 // 写入文件
                 tempFile.write(b, 0, len);
-
-                current += len; // 当前进度
-
+                // 当前进度
+                current += len;
+                // 检查发布进度时间间隔, 发布进度, 和计算速度
                 helper.publish(current, total, false);
-
+                // 检查当前请求是否已被标记为不可用
                 if (!checkNectEnable() && current < total) {
-
+                    // 发布当前进度信息
                     helper.publish(current, total, true);
-
                     if (current < total && total > 100) {
-                        getHandler().sendPause(getTag(), // 当连接中断时保持当前下载信息
+                        // 发布当前请求已被暂停
+                        getHandler().sendPause(getTag());
+                        // 当连接中断时保持当前下载信息
+                        getHandler().sendSaveProgress(getTag(),
                                 current,
                                 total);
                     }
@@ -194,14 +196,19 @@ public class DownloadRequest extends Request {
             // 发布进度
             helper.publish(current, total, true);
 
+            // 通知下载队列下载完成
             if (callback != null) {
                 callback.onDownloadFinish(getTag());
             }
 
-            getHandler().sendFinish(getTag(),// 下载完成返回本地路径
+            // 下载完成返回本地路径
+            getHandler().sendFinish(getTag(),
                     requestParams.path);
+            // 更新数据库下载完成状态
+            getHandler().sendSaveFinished(getTag());
         } else {
             String message = mConnection.getResponseMessage();
+            // 当前连接异常时返回连接信息
             getHandler().sendError(getTag(),
                     responseCode,
                     message);
@@ -227,6 +234,9 @@ public class DownloadRequest extends Request {
             this.delay = delay;
         }
 
+        /**
+         * 记录开始时间
+         */
         public void start() {
             synchronized (LOCK) {
                 startTime = System.currentTimeMillis();
@@ -248,8 +258,11 @@ public class DownloadRequest extends Request {
 
                     float offsetLoad = current - progress; // 下载增量
 
-                    String velocity = calculateVelocity(offsetLoad, offsetTime);
+                    // 当完成时不计算速度
+                    String velocity = finish ? "" :
+                            calculateVelocity(offsetLoad, offsetTime);
 
+                    // 发布进度
                     getHandler().sendProgress(getTag(), current, total, velocity);
 
                     this.progress = current;

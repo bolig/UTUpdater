@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import cn.utsoft.cd.utupdater.event.DownloadCallback;
+import cn.utsoft.cd.utupdater.event.RequestHandler;
 import cn.utsoft.cd.utupdater.util.NetUtil;
 
 /**
@@ -25,6 +26,7 @@ public class BaseQueue {
     public static final int MAX_DOWNLOADING_TASK = 3; //最大同时下载数
 
     private final Context mContext;
+    private final RequestHandler handler;
     private ExecutorService mThreadExecutor; // 线程池
     private HashMap<String, Request> mRequestQueue;
     private HashMap<String, Request> mPauseQueue;
@@ -53,9 +55,14 @@ public class BaseQueue {
         this.mContext = context;
         this.mPauseQueue = new HashMap<>();
         this.mRequestQueue = new HashMap<>();
+        this.handler = new RequestHandler(mContext);
         this.mThreadExecutor = Executors.newFixedThreadPool(MAX_DOWNLOADING_TASK);
 
         this.netDisconnect = !NetUtil.netConnection(mContext);
+    }
+
+    public RequestHandler getHandler() {
+        return handler;
     }
 
     /**
@@ -78,6 +85,13 @@ public class BaseQueue {
 
     protected Context getContext() {
         return mContext;
+    }
+
+    public boolean check(String tag) {
+        synchronized (LOCK) {
+            return mPauseQueue.containsKey(tag)
+                    || mRequestQueue.containsKey(tag);
+        }
     }
 
     /**
@@ -108,6 +122,8 @@ public class BaseQueue {
                 mThreadExecutor.submit(request);
                 // 添加下载队列
                 mRequestQueue.put(tag, request);
+                // 回调请求准备完成
+                request.getHandler().sendPrepare(tag);
                 // 标记当前请求已被加入下载队列
                 request.addDownloadTask();
             }
@@ -125,7 +141,8 @@ public class BaseQueue {
             if (request != null) {
                 request.interrupt();
             } else {
-                mPauseQueue.remove(tag);
+                request = mPauseQueue.remove(tag);
+                request.interrupt();
             }
         }
     }
@@ -161,13 +178,17 @@ public class BaseQueue {
             Request request = mRequestQueue.remove(tag);
             if (request == null) {
                 request = mPauseQueue.get(tag);
-                if (request != null) {
-                    request.interrupt();
+                if (request == null) {
+                    return;
                 }
-                return;
             }
+            // 标记请求为中断状态
             request.interrupt();
-
+            // 当前请求添加了队列, 但还没被执行时, 回调暂停
+            if (!request.isDoing()) {
+                request.getHandler()
+                        .sendPause(tag);
+            }
             mPauseQueue.put(tag, request);
         }
     }
@@ -181,15 +202,18 @@ public class BaseQueue {
             Iterator<String> iterator = keySet.iterator();
             while (iterator.hasNext()) {
                 String tag = iterator.next();
-
                 Request request = mRequestQueue.get(tag);
-
+                // 判断当前请求是否已经下载完成
                 if (request.isDownloadFinish()) {
                     continue;
                 }
-
+                // 标记请求为中断状态
                 request.interrupt();
-
+                // 当前请求添加了队列, 但还没被执行时, 回调暂停
+                if (!request.isDoing()) {
+                    request.getHandler()
+                            .sendPause(tag);
+                }
                 mPauseQueue.put(tag, request);
             }
             mRequestQueue.clear();
@@ -225,7 +249,13 @@ public class BaseQueue {
                     addRequest(tag, request);
                 } else { // 如果请求中断后, 还没有被执行, 刷新状态
                     request.reset();
+
+                    if (!request.isAddDownloadTask()) {
+                        addRequest(tag, request);
+                    }
                 }
+
+                request.getHandler().sendPrepare(tag);
 
                 //将下载请求加入下载队列
                 mRequestQueue.put(tag, request);
@@ -261,7 +291,12 @@ public class BaseQueue {
                         addRequest(tag, request);
                     } else { // 如果请求中断后, 还没有被执行, 刷新状态
                         request.reset();
+                        if (!request.isAddDownloadTask()) {
+                            addRequest(tag, request);
+                        }
                     }
+
+                    request.getHandler().sendPrepare(tag);
 
                     //将下载请求加入下载队列
                     mRequestQueue.put(tag, request);
@@ -319,6 +354,12 @@ public class BaseQueue {
 
                 Request request = mPauseQueue.get(tag);
 
+                // 下载请求可能已经下载完成, 移除队列
+                if (request.isDownloadFinish()) {
+                    removeList.add(tag);
+                    continue;
+                }
+
                 // 判断下载请求是否是因断网而被暂停
                 // 如果是则重启当前下载请求
                 if (request.isNetworkDisconnect()) {
@@ -333,6 +374,10 @@ public class BaseQueue {
                             addRequest(tag, request);
                         }
                     }
+
+                    // 准备下载完成
+                    request.getHandler().sendPrepare(tag);
+
                     removeList.add(tag);
                 }
             }

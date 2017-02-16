@@ -12,7 +12,8 @@ import android.text.TextUtils;
 import java.io.File;
 
 import cn.utsoft.cd.utupdater.config.DownloadConfig;
-import cn.utsoft.cd.utupdater.service.DowloadService;
+import cn.utsoft.cd.utupdater.event.Observer;
+import cn.utsoft.cd.utupdater.service.DownloadService;
 import cn.utsoft.cd.utupdater.util.SPUtil;
 
 /**
@@ -40,14 +41,12 @@ public class UTUpdaterManager {
                             @NonNull String tag,
                             @NonNull String url,
                             @Nullable String name,
-                            @Nullable String versionName,
-                            @Nullable int version) {
-        Intent intent = new Intent(context, DowloadService.class);
+                            @Nullable String versionName) {
+        Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(DownloadConfig.ACTION_ADD_DOWNLOAD);
         intent.putExtra(DownloadConfig.DATA_TAG, tag);
         intent.putExtra(DownloadConfig.DATA_URL, url);
         intent.putExtra(DownloadConfig.DATA_NAME, name);
-        intent.putExtra(DownloadConfig.DATA_VERSION, version);
         intent.putExtra(DownloadConfig.DATA_VERSION_NAME, versionName);
         context.startService(intent);
     }
@@ -60,9 +59,9 @@ public class UTUpdaterManager {
      * @param
      */
     public static void load(@NonNull Context context, @NonNull String tag, @NonNull String url, UTUpdaterListener listener) {
-        UTUpdaterObserver.getIns().addListener(tag, listener);
+        Observer.getIns().addListener(tag, listener);
 
-        Intent intent = new Intent(context, DowloadService.class);
+        Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(DownloadConfig.ACTION_ADD_DOWNLOAD);
         intent.putExtra(DownloadConfig.DATA_TAG, tag);
         intent.putExtra(DownloadConfig.DATA_URL, url);
@@ -77,7 +76,7 @@ public class UTUpdaterManager {
      * @param tag
      */
     public static void pause(Context context, String tag) {
-        Intent intent = new Intent(context, DowloadService.class);
+        Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(DownloadConfig.ACTION_PAUSE_DOWNLOAD);
         intent.putExtra(DownloadConfig.DATA_TAG, tag);
         context.startService(intent);
@@ -90,7 +89,7 @@ public class UTUpdaterManager {
      * @param tag
      */
     public static void resume(Context context, String tag) {
-        Intent intent = new Intent(context, DowloadService.class);
+        Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(DownloadConfig.ACTION_RESUME_DOWNLOAD);
         intent.putExtra(DownloadConfig.DATA_TAG, tag);
         context.startService(intent);
@@ -103,7 +102,7 @@ public class UTUpdaterManager {
      * @param tag
      */
     public static void remove(Context context, String tag) {
-        Intent intent = new Intent(context, DowloadService.class);
+        Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(DownloadConfig.ACTION_REMOVE_DOWNLOAD);
         intent.putExtra(DownloadConfig.DATA_TAG, tag);
         context.startService(intent);
@@ -115,7 +114,7 @@ public class UTUpdaterManager {
      * @param context
      */
     public static void clearDownloadHistory(Context context) {
-        Intent intent = new Intent(context, DowloadService.class);
+        Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(DownloadConfig.ACTION_CLEAR_DOWNLOAD_HISTORY);
         context.startService(intent);
     }
@@ -126,7 +125,7 @@ public class UTUpdaterManager {
      * @param callback
      */
     public static void observer(UTUpdaterCallback callback) {
-        UTUpdaterObserver
+        Observer
                 .getIns()
                 .setCallback(callback);
     }

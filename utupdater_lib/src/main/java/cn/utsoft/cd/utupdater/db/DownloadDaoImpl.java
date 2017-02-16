@@ -47,9 +47,9 @@ public class DownloadDaoImpl {
 
         values.put("tag", info.tag);
         values.put("url", info.url);
-        values.put("name", info.name);
+        values.put("name", info.fileName);
 
-        values.put("versionName", info.versionName);
+        values.put("title", info.title);
         values.put("version", info.version);
 
         values.put("path", info.path);
@@ -155,8 +155,8 @@ public class DownloadDaoImpl {
         bean.id = cursor.getInt(cursor.getColumnIndex("_id"));
         bean.tag = cursor.getString(cursor.getColumnIndex("tag"));
         bean.url = cursor.getString(cursor.getColumnIndex("url"));
-        bean.name = cursor.getString(cursor.getColumnIndex("name"));
-        bean.versionName = cursor.getString(cursor.getColumnIndex("versionName"));
+        bean.fileName = cursor.getString(cursor.getColumnIndex("name"));
+        bean.title = cursor.getString(cursor.getColumnIndex("title"));
         bean.version = cursor.getInt(cursor.getColumnIndex("version"));
         bean.path = cursor.getString(cursor.getColumnIndex("path"));
         bean.length = cursor.getLong(cursor.getColumnIndex("length"));

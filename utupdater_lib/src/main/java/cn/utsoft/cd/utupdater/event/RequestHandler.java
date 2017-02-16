@@ -5,9 +5,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-import cn.utsoft.cd.utupdater.UTUpdaterListener;
 import cn.utsoft.cd.utupdater.config.DownloadConfig;
+import cn.utsoft.cd.utupdater.config.ErrorCode;
 import cn.utsoft.cd.utupdater.db.DownloadDaoImpl;
+import cn.utsoft.cd.utupdater.util.NetUtil;
 
 /**
  * Created by 李波 on 2017/2/15.
@@ -16,14 +17,10 @@ import cn.utsoft.cd.utupdater.db.DownloadDaoImpl;
  */
 public class RequestHandler extends Handler implements IRequestHandler {
 
-    private final UTUpdaterListener listener;
     private final Context mContext;
-    private final String tag;
 
-    public RequestHandler(Context context, String tag, UTUpdaterListener listener) {
-        this.tag = tag;
+    public RequestHandler(Context context) {
         this.mContext = context;
-        this.listener = listener;
     }
 
     @Override
@@ -32,63 +29,52 @@ public class RequestHandler extends Handler implements IRequestHandler {
         String tag = data.getString("tag");
         switch (msg.what) {
             case DownloadConfig.FLAG_REQUEST_START:
-                if (checkListener()) {
-                    listener.onStart(tag);
-                }
+                Observer.getIns()
+                        .onStart(tag);
                 break;
             case DownloadConfig.FLAG_REQUEST_PAUSE:
-                long current = data.getLong("current", -1);
-                long length = data.getLong("length", -1);
-
-                DownloadDaoImpl
-                        .getIns(mContext)
-                        .updateDownloadInfo(tag, current, length);
-
-                if (checkListener()) {
-                    listener.onPause(tag);
-                }
+                Observer.getIns()
+                        .onPause(tag);
                 break;
             case DownloadConfig.FLAG_REQUEST_PROGRESS:
                 long current1 = data.getLong("current", -1);
                 long length1 = data.getLong("length", -1);
                 String v = data.getString("velocity");
 
-                if (checkListener()) {
-                    listener.onProgress(tag, current1, length1, v);
-                }
+                Observer.getIns()
+                        .onProgress(tag, current1, length1, v);
                 break;
             case DownloadConfig.FLAG_REQUEST_FINISH:
                 String filePath = data.getString("path");
 
-                // 回调下载完成
-                if (checkListener()) {
-                    listener.onComplete(tag, filePath);
-                }
-
-                // 保存下载完成状态
-                DownloadDaoImpl
-                        .getIns(mContext)
-                        .updateDownloadFinishInfo(tag, 1);
+                Observer.getIns()
+                        .onComplete(tag, filePath);
                 break;
             case DownloadConfig.FLAG_REQUEST_ERROR:
                 int code = data.getInt("code");
                 String errorMsg = data.getString("msg");
 
-                if (checkListener()) {
-                    listener.onError(tag, code, errorMsg);
-                }
+                Observer.getIns()
+                        .onError(tag, code, errorMsg);
+                break;
+            case DownloadConfig.FLAG_REQUEST_ADD_TASK:
+                Observer.getIns()
+                        .onPrepare(tag);
+                break;
+            case DownloadConfig.FLAG_SAVE_PROGRESS:
+                long current = data.getLong("current", -1);
+                long length = data.getLong("length", -1);
+                DownloadDaoImpl
+                        .getIns(mContext)
+                        .updateDownloadInfo(tag, current, length);
+                break;
+            case DownloadConfig.FLAG_SAVE_FINISHED:
+                // 保存下载完成状态
+                DownloadDaoImpl
+                        .getIns(mContext)
+                        .updateDownloadFinishInfo(tag, 1);
                 break;
         }
-    }
-
-
-    /**
-     * 检查是否有监听器
-     *
-     * @return
-     */
-    private boolean checkListener() {
-        return listener != null;
     }
 
     @Override
@@ -127,25 +113,66 @@ public class RequestHandler extends Handler implements IRequestHandler {
 
     @Override
     public void sendError(String tag, int code, String msg) {
+        if (NetUtil.netConnection(mContext)) {
+            Bundle extras = new Bundle();
+            extras.putString("tag", tag);
+            extras.putInt("code", code);
+            extras.putString("msg", msg);
+
+            Message message =
+                    buildMeassge(DownloadConfig.FLAG_REQUEST_ERROR, extras);
+            sendMessage(message);
+        } else {
+            Bundle extras = new Bundle();
+            extras.putString("tag", tag);
+            extras.putInt("code", ErrorCode.ERROR_DISCONNECT_CODE);
+            extras.putString("msg", "网络连接断开");
+
+            Message message =
+                    buildMeassge(DownloadConfig.FLAG_REQUEST_ERROR, extras);
+            sendMessage(message);
+        }
+    }
+
+    @Override
+    public void sendPause(String tag) {
         Bundle extras = new Bundle();
         extras.putString("tag", tag);
-        extras.putInt("code", code);
-        extras.putString("msg", msg);
 
         Message message =
-                buildMeassge(DownloadConfig.FLAG_REQUEST_ERROR, extras);
+                buildMeassge(DownloadConfig.FLAG_REQUEST_PAUSE, extras);
         sendMessage(message);
     }
 
     @Override
-    public void sendPause(String tag, long current, long total) {
+    public void sendSaveProgress(String tag, long current, long total) {
         Bundle extras = new Bundle();
         extras.putString("tag", tag);
         extras.putLong("current", current);
         extras.putLong("length", total);
 
         Message message =
-                buildMeassge(DownloadConfig.FLAG_REQUEST_PAUSE, extras);
+                buildMeassge(DownloadConfig.FLAG_SAVE_PROGRESS, extras);
+        sendMessage(message);
+    }
+
+    @Override
+    public void sendSaveFinished(String tag) {
+        Bundle extras = new Bundle();
+        extras.putString("tag", tag);
+
+        Message message =
+                buildMeassge(DownloadConfig.FLAG_SAVE_FINISHED, extras);
+        sendMessage(message);
+    }
+
+    @Override
+    public void sendPrepare(String tag) {
+        Bundle extras = new Bundle();
+        extras.putString("tag", tag);
+
+        Message message =
+                buildMeassge(DownloadConfig.FLAG_REQUEST_ADD_TASK, extras);
         sendMessage(message);
     }
 

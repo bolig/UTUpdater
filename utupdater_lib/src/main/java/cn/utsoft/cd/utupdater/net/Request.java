@@ -4,7 +4,6 @@ import android.content.Context;
 
 import java.io.IOException;
 
-import cn.utsoft.cd.utupdater.UTUpdaterListener;
 import cn.utsoft.cd.utupdater.event.DownloadCallback;
 import cn.utsoft.cd.utupdater.event.RequestHandler;
 
@@ -17,24 +16,25 @@ public abstract class Request implements Runnable, IRequest {
 
     private final String tag;                           // 请求唯一标示
     private final Context mContext;
-    private final UTUpdaterListener mListener;          // 请求回调
+//    private final UTUpdaterListener mListener;          // 请求回调
     private volatile RequestHandler handler;
 
     private Object LOCK = new Object();                 // 同步锁
 
     protected DownloadCallback callback;      // 下载完成回调
 
+    private volatile boolean isDoing = false;           // 请求是否正在被执行
     private volatile boolean isFinish = false;          // 请求是否执行完成
     private volatile boolean isInterrupt = false;       // 请求是否被中断
     private volatile boolean isNetDisconnect = false;   // 网络是否中断
     private volatile boolean isDownloadFinish = false;  // 是否下载完成
     private volatile boolean isAddDownloadTask = false; // 是否添加下载队列
 
-    public Request(Context context, String tag, UTUpdaterListener listener) {
+    public Request(Context context, String tag, RequestHandler handler) {
         this.tag = tag;
-        this.mListener = listener;
+//        this.mListener = listener;
         this.mContext = context.getApplicationContext();
-        this.handler = new RequestHandler(mContext, getTag(), mListener);
+        this.handler = handler;
     }
 
     /**
@@ -49,13 +49,19 @@ public abstract class Request implements Runnable, IRequest {
     @Override
     public void run() {
         try {
+            // 标记当前请求正在执行
+            toDoing();
+            // 检查请求是否被标记不可执行
             if (checkNectEnable()) {
+                // 创建连接参数
                 create();
-
+                // 发起请求
                 request();
+            } else {
+                // 发布暂停成功
+                getHandler().sendPause(getTag());
             }
-
-            // 请求被执行完
+            // 标记当前请求被执行完
             finish();
         } catch (IOException e) {
             e.printStackTrace();
@@ -89,6 +95,7 @@ public abstract class Request implements Runnable, IRequest {
     @Override
     public void reset() {
         synchronized (LOCK) {
+            this.isDoing = false;
             this.isFinish = false;
             this.isInterrupt = false;
             this.isNetDisconnect = false;
@@ -98,6 +105,7 @@ public abstract class Request implements Runnable, IRequest {
     @Override
     public void finish() {
         synchronized (LOCK) {
+            this.isDoing = false;
             this.isFinish = true;
             this.isAddDownloadTask = false;
         }
@@ -144,6 +152,25 @@ public abstract class Request implements Runnable, IRequest {
             return isAddDownloadTask;
         }
     }
+
+    @Override
+    public void toDoing() {
+        synchronized (LOCK) {
+            this.isDoing = true;
+        }
+    }
+
+    @Override
+    public boolean isDoing() {
+        synchronized (LOCK) {
+            return isDoing;
+        }
+    }
+
+//    @Override
+//    public UTUpdaterListener getListener() {
+//        return mListener;
+//    }
 
     @Override
     public String getTag() {

@@ -25,6 +25,11 @@ public interface IMsgHandler {
     void sendResumeAllRequest();
 
     /**
+     * 通知移除所有请求完成
+     */
+    void sendRemoveAllRequest();
+
+    /**
      * 通知数据清空完成
      */
     void sendClearHistory();

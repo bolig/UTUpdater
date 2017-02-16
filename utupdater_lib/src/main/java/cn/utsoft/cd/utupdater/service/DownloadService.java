@@ -3,6 +3,7 @@ package cn.utsoft.cd.utupdater.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
@@ -13,7 +14,7 @@ import cn.utsoft.cd.utupdater.config.DownloadConfig;
  * Function: 后台下载service
  * Desc:
  */
-public class DowloadService extends Service {
+public class DownloadService extends Service {
 
     private DownloadManager mManager;
     private Context mContext;
@@ -42,13 +43,11 @@ public class DowloadService extends Service {
                         if (intent.hasExtra(DownloadConfig.DATA_URL)) {
                             tag = intent.getStringExtra(DownloadConfig.DATA_TAG);
 
-                            int version = intent.getIntExtra(DownloadConfig.DATA_VERSION, 0);
-
                             String url = intent.getStringExtra(DownloadConfig.DATA_URL);
                             String desc = intent.getStringExtra(DownloadConfig.DATA_NAME);
                             String versionName = intent.getStringExtra(DownloadConfig.DATA_VERSION_NAME);
 
-                            mManager.addDownload(tag, url, desc, versionName, version);
+                            mManager.addDownload(tag, url, desc, versionName);
                         }
                     }
                     break;
@@ -80,9 +79,21 @@ public class DowloadService extends Service {
         return mManager != null;
     }
 
+    public DownloadManager getManager() {
+        return mManager;
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         mManager.destroy();
+    }
+
+    public class DownloadBinder extends Binder {
+
+        public DownloadService getService() {
+            return DownloadService.this;
+        }
+
     }
 }

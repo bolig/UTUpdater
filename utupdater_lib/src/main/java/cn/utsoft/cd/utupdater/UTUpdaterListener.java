@@ -48,6 +48,13 @@ public interface UTUpdaterListener {
     void onComplete(String tag, String path);
 
     /**
+     * 移除回调
+     *
+     * @param tag
+     */
+    void onRemove(String tag);
+
+    /**
      * 下载过程中发生异常
      *
      * @param tag

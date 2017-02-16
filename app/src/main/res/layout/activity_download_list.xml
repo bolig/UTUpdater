@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="cn.utsoft.update.simple.DownloadListActivity">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_download_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/tv_delete"
+        android:scrollbars="none">
+
+    </android.support.v7.widget.RecyclerView>
+
+</RelativeLayout>

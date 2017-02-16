@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
 import java.util.List;
 
+import cn.utsoft.cd.utupdater.UTUpdaterListener;
 import cn.utsoft.cd.utupdater.db.DownloadDaoImpl;
+import cn.utsoft.cd.utupdater.entity.LoadHolder;
 import cn.utsoft.cd.utupdater.entity.RequestBean;
 import cn.utsoft.cd.utupdater.event.MsgHandler;
+import cn.utsoft.cd.utupdater.event.Observer;
 import cn.utsoft.cd.utupdater.net.DownloadQueue;
 import cn.utsoft.cd.utupdater.util.NetUtil;
 
@@ -21,7 +26,7 @@ import cn.utsoft.cd.utupdater.util.NetUtil;
  * Function: 下载管理与下载信息管理类
  * Desc:
  */
-public class DownloadManager implements IDownloadManager {
+public class DownloadManager implements IDownload {
 
     private volatile static DownloadManager instance;
 
@@ -89,18 +94,40 @@ public class DownloadManager implements IDownloadManager {
     }
 
     @Override
-    public void addDownload(String tag, String url, String desc, String versionName, int version) {
-        RequestBean request = new RequestBean(tag,
-                url,
-                desc,
-                versionName,
-                version);
+    public void addAllDownload(List<LoadHolder> list) {
 
-        if (request.isNull()) {
-            return;
+    }
+
+    @Override
+    public void addDownload(LoadHolder holder) {
+        addDownload(holder.getRequestTag(),
+                holder.getRequestUrl(),
+                holder.getRequestFileName(),
+                holder.getRequestTitle());
+    }
+
+    @Override
+    public void addDownload(@NonNull String tag, @NonNull String url, String fileName, String title) {
+        if (TextUtils.isEmpty(url)) {
+            throw new NullPointerException("下载URL不能为空");
         }
+        if (TextUtils.isEmpty(tag)) {
+            tag = url;
+        }
+        // 创建下载请求
+        RequestBean request = new RequestBean(tag, url, fileName, title);
+        // 加入下载队列
+        getDownloadQueue().addDownloadRequest(request);
+    }
 
-        getDownloadQueue().addDownloadRequest(request); // 加入下载队列
+    @Override
+    public void addDownload(String tag, String url) {
+        addDownload(tag, url, null, null);
+    }
+
+    @Override
+    public void addDownload(String url) {
+        addDownload(null, url, null, null);
     }
 
     @Override
@@ -121,9 +148,9 @@ public class DownloadManager implements IDownloadManager {
     }
 
     @Override
-    public void addAllDownload(List<RequestBean> list) {
+    public void removeAllDownload() {
         getDownloadQueue()
-                .addAllDownloadRequest(list);
+                .removeAllDownloadRequest();
     }
 
     @Override
@@ -133,15 +160,21 @@ public class DownloadManager implements IDownloadManager {
     }
 
     @Override
+    public void pauseAllDownload() {
+        getDownloadQueue()
+                .pauseAllDownloadRequest();
+    }
+
+    @Override
     public void resumeDownload(String tag) {
         getDownloadQueue()
                 .resumeDownloadRequest(tag);
     }
 
     @Override
-    public void clearDownload() {
+    public void resumeAllDownload() {
         getDownloadQueue()
-                .removeAllDownloadRequest();
+                .resumeAllDownloadRequest();
     }
 
     @Override
@@ -163,12 +196,18 @@ public class DownloadManager implements IDownloadManager {
         mMsgHandler.sendClearHistory();
     }
 
+    @Override
+    public void setDownloadListener(UTUpdaterListener listener) {
+        Observer.getIns()
+                .setListener(listener);
+    }
+
     /**
      * 获取下载队列管理器
      *
      * @return
      */
-    public DownloadQueue getDownloadQueue() {
+    private DownloadQueue getDownloadQueue() {
         if (mQueue == null) {
             synchronized (DownloadManager.class) {
                 if (mQueue == null) {
@@ -179,8 +218,10 @@ public class DownloadManager implements IDownloadManager {
         return mQueue;
     }
 
-    @Override
-    public void destroy() {
+    /**
+     * 回收资源
+     */
+    void destroy() {
         if (mQueue != null) {
             mQueue.destroy();
             mQueue = null;
