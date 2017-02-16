@@ -14,9 +14,9 @@ public class UpdaterEntity {
     public String versionName;
     public int version;
 
-    public boolean isStart = false;
-    public boolean finish = false;
-    public int progress = 0;
+    public int status = 0; // 0.初始化状态; 1.添加下载队列; 2.正在下载; 3.暂停下载; 4.下载完成; -1. 出错
+    public long progress = 0;
+    public long total = 0;
 
     public String path;
 

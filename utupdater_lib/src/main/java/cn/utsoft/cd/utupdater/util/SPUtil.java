@@ -5,10 +5,9 @@ import android.content.SharedPreferences;
 
 /**
  * Created by 李波 on 2017/2/8.
- * Function:
+ * Function: SharedPreferences封装工具类
  * Desc:
  */
-
 public class SPUtil {
     private volatile static SPUtil sSPUtil;
 

@@ -1,6 +1,7 @@
 package cn.utsoft.cd.utupdater.util;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.io.File;
 
@@ -9,19 +10,35 @@ import java.io.File;
  * Function:
  * Desc:
  */
-public class ApkFileUtil {
+public class FileUtils {
 
-    public static File create(Context context, String versionName) {
+    /**
+     * 创建apk缓存地址
+     *
+     * @param context
+     * @param name
+     * @return
+     */
+    public static File create(Context context, String name) {
         File cacheDir = getCacheDir(context);
         cacheDir.mkdirs();
-        File file = new File(cacheDir, "update_v_" + versionName + ".apk");
+        if (TextUtils.isEmpty(name)) {
+            name = "t_" + System.currentTimeMillis();
+        }
+        File file = new File(cacheDir, "updater_" + name);
         if (file.exists()) {
             file.delete();
-            file = new File(cacheDir, "update_v_" + versionName + ".apk");
+            file = new File(cacheDir, "updater_" + name);
         }
         return file;
     }
 
+    /**
+     * 获取系统缓存路径
+     *
+     * @param context
+     * @return
+     */
     private static File getCacheDir(Context context) {
         File cacheDir = context.getExternalCacheDir();
         if (cacheDir == null) {

@@ -1,7 +1,5 @@
 package cn.utsoft.cd.utupdater.entity;
 
-import android.text.TextUtils;
-
 import java.io.Serializable;
 
 /**
@@ -16,9 +14,9 @@ public class RequestBean implements Serializable {
     public int finished; // 0: 没下载完成, 1:下载完成
 
     public String tag;
-    public String name;
+    public String fileName;
     public String url;
-    public String versionName;
+    public String title;
 
     public String path;  // apk下载本地路径
 
@@ -26,15 +24,21 @@ public class RequestBean implements Serializable {
     public long progress;
 
     public RequestBean() {
-
     }
 
-    public RequestBean(String tag, String url, String name, String versionName, int version) {
+    public RequestBean(String tag, String url, String fileName, String title) {
         this.tag = tag;
-        this.name = name;
+        this.fileName = fileName;
         this.url = url;
-        this.version = version;
-        this.versionName = versionName;
+        this.title = title;
+    }
+
+    public long getProgress() {
+        return progress == 0 ? -1 : progress;
+    }
+
+    public long getLength() {
+        return length == 0 ? -1 : length;
     }
 
     /**
@@ -62,10 +66,5 @@ public class RequestBean implements Serializable {
         int result = version;
         result = 31 * result + (url != null ? url.hashCode() : 0);
         return result;
-    }
-
-    public boolean isNull() {
-        return TextUtils.isEmpty(url)
-                || TextUtils.isEmpty(tag);
     }
 }

@@ -22,7 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
             "tag text, " +
             "path text, " +
             "name text, " +
-            "versionName text, " +
+            "title text, " +
             "version integer, " +
             "length long, " +
             "progress long, " +

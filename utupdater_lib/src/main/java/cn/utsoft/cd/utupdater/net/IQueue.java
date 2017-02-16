@@ -1,5 +1,7 @@
 package cn.utsoft.cd.utupdater.net;
 
+import android.support.annotation.Nullable;
+
 import java.util.List;
 
 import cn.utsoft.cd.utupdater.entity.RequestBean;
@@ -16,7 +18,7 @@ public interface IQueue {
      *
      * @param bean
      */
-    void addDownloadRequest(RequestBean bean);
+    void addDownloadRequest(@Nullable RequestBean bean);
 
     /**
      * 添加一个集合到下载队列
@@ -38,12 +40,22 @@ public interface IQueue {
     void removeAllDownloadRequest();
 
     /**
+     * 将请求从队列中移除, 一般用于请求下载完成
+     *
+     * @param tag
+     */
+    void removeRequestFromQueue(String tag);
+
+    /**
      * 暂停一个下载请求
      *
      * @param tag
      */
     void pauseDownloadRequest(String tag);
 
+    /**
+     * 暂停所有请求
+     */
     void pauseAllDownloadRequest();
 
     /**
@@ -54,12 +66,22 @@ public interface IQueue {
     void resumeDownloadRequest(String tag);
 
     /**
-     * @param tag
+     * 重启所有下载请求
      */
-    void resumeAllDownloadRequest(String tag);
+    void resumeAllDownloadRequest();
+
+    /**
+     * 网络断开
+     */
+    void netDisconnect();
+
+    /**
+     * 网络重新连接
+     */
+    void netReconnect();
 
     /**
      * 清理队列
      */
-    void destory();
+    void destroy();
 }

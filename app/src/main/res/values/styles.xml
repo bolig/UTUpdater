@@ -8,4 +8,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AlertDialog.AppCompat.DEV" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:windowMinWidthMajor">65%</item>
+        <item name="android:windowMinWidthMinor">95%</item>
+        <!--<item name="windowFixedWidthMajor">@dimen/abc_dialog_fixed_width_major</item>-->
+        <!--<item name="windowFixedWidthMinor">@dimen/abc_dialog_fixed_width_minor</item>-->
+        <!--<item name="windowFixedHeightMajor">@dimen/abc_dialog_fixed_height_major</item>-->
+        <!--<item name="windowFixedHeightMinor">@dimen/abc_dialog_fixed_height_minor</item>-->
+    </style>
+
 </resources>
