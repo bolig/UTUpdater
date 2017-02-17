@@ -7,9 +7,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import cn.utsoft.cd.utupdater.UTUpdaterManager;
+import cn.utsoft.cd.utupdater.ui.ProgressDialog;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView tvDelete;
@@ -46,7 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void checkUpdater() {
-        Toast.makeText(this, "检查更新", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "检查更新", Toast.LENGTH_SHORT).show();
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.show();
     }
 
     private void clearHistory() {
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      *
      * @param view
      */
-    public void toDownloadOnNotification(View view){
+    public void toDownloadOnNotification(View view) {
 
     }
 
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      *
      * @param view
      */
-    public void toDownloadOnDialog(View view){
+    public void toDownloadOnDialog(View view) {
 
     }
 }
